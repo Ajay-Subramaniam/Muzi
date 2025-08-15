@@ -33,7 +33,7 @@ publicRoutes.post('/signin', signInDetailsCheck, async (req, res) => {
             record = record.toObject();
             record._id = record._id.toString()
             const token = jwt.sign(record, process.env.JWT_SECRET);
-            res.cookie('token', token, { httpOnly: true })
+            res.cookie('token', token, { httpOnly: true, sameSite : 'none', secure: true, expires: new Date(Date.now() + 24 * 3600000)})
             res.send(record)
         }
     }
