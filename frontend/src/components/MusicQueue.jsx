@@ -42,6 +42,7 @@ const MusicQueue = () => {
 
   function resetMusicList(){
     setMusicList([])
+    setIsMusicStarted(false)
   }
 
   function musicStarted(){
