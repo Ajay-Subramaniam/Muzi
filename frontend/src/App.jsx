@@ -8,6 +8,7 @@ import PrivateRoute from './components/PrivateRoute'
 import SnackbarProvider from './components/SnackbarProvider';
 import UserInfoProvider from './components/UserInfoProvider';
 import LoaderProvider from './components/LoaderContext'
+import NotFoundPage from './pages/NotFound'
 
 function App() {
   return (
@@ -22,6 +23,7 @@ function App() {
                 <Route path="/roleChange" element={<RoleChange />} />
               </Route>
               <Route path="/login" element={<LandingPage />} />
+              <Route path="*" element={<NotFoundPage />} />
             </Routes>
           </BrowserRouter>
         </UserInfoProvider>
