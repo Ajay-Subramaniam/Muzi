@@ -1,4 +1,3 @@
-import youtubesearchapi from "youtube-search-api";
 import { userModel, spaceModel } from './mongooseModel.js'
 import jwt from 'jsonwebtoken'
 
@@ -68,14 +67,15 @@ export function socketHandlers(io) {
         socket.on('fetch-music', async ({ spaceName, musicId }) => {
             let musicInfo = {}
             try {
-                const data = await youtubesearchapi.GetVideoDetails(musicId)
-                const thumbnail = data.thumbnail.thumbnails
-                thumbnail.sort((a, b) => a.height - b.height)
+                const resposne = await fetch(`https://youtube.googleapis.com/youtube/v3/videos?part=snippet&id=${musicId}&key=${process.env.YOUTUBE_API_KEY}`)
+                const data = await resposne.json()
+                const title = data.items[0].snippet.title
+                const thumbnailUrl = data.items[0].snippet.thumbnails.default.url
 
                 musicInfo = {
-                    musicId: data.id,
-                    title: data.title,
-                    thumbnail: thumbnail[0].url,
+                    musicId: musicId,
+                    title: title,
+                    thumbnail: thumbnailUrl,
                     addedBy: socket.userData.id,
                     addedAt: new Date(),
                     lastModifiedAt: Date.now(),

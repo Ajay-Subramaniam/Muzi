@@ -104,7 +104,7 @@ publicRoutes.post('/google/auth', async (req, res) => {
         record = record.toObject();
         record._id = record._id.toString()
         const token = jwt.sign(record, process.env.JWT_SECRET);
-        res.cookie('token', token, { httpOnly: true })
+        res.cookie('token', token, { httpOnly: true, sameSite : 'none', secure: true, })
         res.send('success')
     }
     catch (err) {
@@ -114,7 +114,7 @@ publicRoutes.post('/google/auth', async (req, res) => {
 })
 
 protectedRoutes.get('/logout', (req, res) => {
-    res.clearCookie('token', { httpOnly: true });
+    res.clearCookie('token', { httpOnly: true, sameSite : 'none', secure: true, });
     res.send({ message: 'Logged out successfully' });
 });
 
