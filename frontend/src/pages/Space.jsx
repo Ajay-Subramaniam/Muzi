@@ -40,9 +40,9 @@ const Space = () => {
       if(currentMusicState){
         setToPlay()
       }
-      fetchLocalStorage(spaceName,musicQueue)
+      fetchLocalStorage(spaceName,musicQueue,userInfo.id)
       musicQueue = musicQueue.map(music=>{
-        const myVote = getVote(music.musicId,music.addedAt,spaceName)
+        const myVote = getVote(music.musicId,music.addedAt,spaceName,userInfo.id)
         return {
           ...music,
           myVote  

@@ -72,6 +72,11 @@ const SignIn = () => {
     setPassword('12345')
   }
 
+  function failureInGoogleSignin(){
+    navigate('/')
+    showMessage('Error occured !')
+  }
+
   async function sendTokenToBackend(credentialResponse){
     try{
       const response = await fetch(API.GOOGLE_AUTH, {
@@ -106,8 +111,7 @@ const SignIn = () => {
         <Box sx={{ display: 'flex', justifyContent: 'center' ,width:'100%'}}>
         <GoogleLogin
           onSuccess={sendTokenToBackend}
-          onError={() => {
-          }}
+          onError={failureInGoogleSignin}
           logo_alignment='left'
         />
         </Box>

@@ -42,7 +42,7 @@ export default function MusicCard({ musicItem ,index,reorderList}) {
       musicItem.myVote=1
     }
     musicItem.score = newScore
-    updateVote(musicId,musicItem.addedAt,spaceName,musicItem.myVote)
+    updateVote(musicId,musicItem.addedAt,spaceName,musicItem.myVote,userInfo.id)
     socket.emit('update-score',{spaceName,musicId,score:newScore})
   }
   return (
