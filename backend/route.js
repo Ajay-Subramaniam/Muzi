@@ -2,7 +2,6 @@ import express from 'express'
 import zod from 'zod'
 import jwt from 'jsonwebtoken'
 import { userModel } from './mongooseModel.js'
-import { OAuth2Client } from 'google-auth-library';
 
 export const publicRoutes = express.Router()
 export const protectedRoutes = express.Router()
@@ -33,7 +32,7 @@ publicRoutes.post('/signin', signInDetailsCheck, async (req, res) => {
             record = record.toObject();
             record._id = record._id.toString()
             const token = jwt.sign(record, process.env.JWT_SECRET);
-            res.cookie('token', token, { httpOnly: true, sameSite : 'none', secure: true, expires: new Date(Date.now() + 24 * 3600000)})
+            res.cookie('token', token, { httpOnly: true, sameSite: 'none', secure: true, expires: new Date(Date.now() + 24 * 3600000) })
             res.send(record)
         }
     }
@@ -87,14 +86,24 @@ publicRoutes.get('/health', (req, res) => {
 
 publicRoutes.post('/google/auth', async (req, res) => {
     try {
-        const client = new OAuth2Client();
-        const ticket = await client.verifyIdToken({
-            idToken: req.body.credential,
-            audience: process.env.WEB_CLIENT_ID,
-        })
-        const payload = ticket.getPayload();
-        const name = payload.name
-        const email = payload.email
+        const response = await fetch(
+            'https://www.googleapis.com/oauth2/v3/userinfo',
+            {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${req.body.access_token}`,
+                },
+            }
+        );
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(`Failed to fetch user info: ${response.status} ${response.statusText} `);
+        }
+
+        const userInfo = await response.json();
+
+        const name = userInfo.name
+        const email = userInfo.email
         let record = await userModel.findOne({ email }, { name: 1, _id: 1, role: 1 })
         if (record == null) {//proceed with sign up logic
             console.log('inside google sso creation of new user')
@@ -104,7 +113,7 @@ publicRoutes.post('/google/auth', async (req, res) => {
         record = record.toObject();
         record._id = record._id.toString()
         const token = jwt.sign(record, process.env.JWT_SECRET);
-        res.cookie('token', token, { httpOnly: true, sameSite : 'none', secure: true, })
+        res.cookie('token', token, { httpOnly: true, sameSite: 'none', secure: true, })
         res.send('success')
     }
     catch (err) {
@@ -114,7 +123,7 @@ publicRoutes.post('/google/auth', async (req, res) => {
 })
 
 protectedRoutes.get('/logout', (req, res) => {
-    res.clearCookie('token', { httpOnly: true, sameSite : 'none', secure: true, });
+    res.clearCookie('token', { httpOnly: true, sameSite: 'none', secure: true, });
     res.send({ message: 'Logged out successfully' });
 });
 

@@ -1,11 +1,12 @@
 import React,{useState} from 'react'
 import { TextField, Button, Typography, Box } from '@mui/material'
-import { GoogleOAuthProvider, GoogleLogin } from '@react-oauth/google';
+import { GoogleOAuthProvider } from '@react-oauth/google';
 import { useNavigate } from 'react-router-dom';
 import { API } from '../apiConfig';
 import {useSnackbar} from './SnackbarProvider'
 import Divider from '@mui/material/Divider';
 import Stack from '@mui/material/Stack';
+import GoogleSignInButton from './GoogleSignInButton'
 
 const SignIn = () => {
   const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID
@@ -15,6 +16,29 @@ const SignIn = () => {
   const [password, setPassword] = useState("")
   const [loading,setLoading] = useState(false)
   const minLenPassword = 5;
+
+  const handleGoogleSuccess = async (authResponse) => {
+    try {
+      const response = await fetch(API.GOOGLE_AUTH, {
+        method: "POST",
+        credentials: 'include',
+        body: JSON.stringify({ access_token : authResponse.access_token }),
+        headers: {
+          "Content-Type": "application/json"
+        }
+      });
+      if (response.status === 200) {
+        navigate('/');
+      }
+    } catch (err) {
+      showMessage('unable to connect to our servers!');
+    }
+  };
+
+  const handleGoogleError = () => {
+    showMessage('Google sign-in failed!');
+  };
+  
   async function handleSubmit(){
     if(emailIsValid(email)){
       if(password.length<minLenPassword){
@@ -31,7 +55,7 @@ const SignIn = () => {
     }
   }
 
-  async function signInBackend(){
+    async function signInBackend(){
     try{
       const response = await fetch(API.SIGN_IN, {
         method: "POST",
@@ -77,26 +101,6 @@ const SignIn = () => {
     showMessage('Error occured !')
   }
 
-  async function sendTokenToBackend(credentialResponse){
-    try{
-      const response = await fetch(API.GOOGLE_AUTH, {
-        method: "POST",
-        credentials: 'include',
-        body: JSON.stringify({ credential: credentialResponse.credential }),
-        headers:{
-          "Content-Type":"application/json"
-        }
-      })
-      if(response.status ==200){
-        navigate('/')
-      }
-    }
-    catch(err){
-      showMessage('unable to connect to our servers!')
-    }
-
-  }
-
   return (
     <Box sx={{
       border: 'black',
@@ -107,15 +111,14 @@ const SignIn = () => {
       <TextField value={email} label="Email" onChange={(e)=>setEmail(e.target.value)}variant="outlined" type='email' />
       <TextField value={password} label="password" onChange={(e)=>setPassword(e.target.value)} variant="outlined" type='password'/>
       <Button loadingPosition="start" fullWidth loading={loading} variant='contained' type='submit' onClick={handleSubmit}>Sign in</Button>
+      
       <GoogleOAuthProvider clientId={clientId} >
-        <Box sx={{ display: 'flex', justifyContent: 'center' ,width:'100%'}}>
-        <GoogleLogin
-          onSuccess={sendTokenToBackend}
-          onError={failureInGoogleSignin}
-          logo_alignment='left'
+        <GoogleSignInButton 
+          onSuccess={handleGoogleSuccess}
+          onError={handleGoogleError}
         />
-        </Box>
       </GoogleOAuthProvider>
+      
       <Divider/>
       <Typography sx={{textAlign:'center'}}>
           Test Credentials
